@@ -175,17 +175,22 @@
 
     getDateOrDefault: function( date, defaultDate ) {
         var result;
-        if( date instanceof Date ) { result = date; }
+        if( date instanceof Date ) {
+            result = date;
+        }
         else if( typeof date === 'string' ) {
           result = new UTCDate(date);
           if( !result.getUTCFullYear() ) {
-            result = new Date(date); //try one more time, Date() is more forgiving than UTCDate
-            if( typeof result.getFullYear != 'undefined' ) {
-              result = new UTCDate(result.getFullYear(),result.getMonth(),result.getDate());
-            }
-            else {
-              result = defaultDate;
-            }
+            /**
+             * try one more time, Date() is more forgiving  of various formats than UTCDate, however note that I am
+             * not use getUTCDate(), etc., nor am I using toISOString() as both of these would convert the local time
+             * to UTC time...we are assuming the time was submitted AS UTC. Right or wrong???
+             * I'm not sure, but this was the way that worked w/ my system.
+             */
+            result = new Date(date);
+            result = typeof result.getFullYear != 'undefined'
+                   ? new UTCDate(result.getFullYear(),result.getMonth(),result.getDate(),result.getHours(),result.getMinutes(),result.getSeconds())
+                   : defaultDate;
           }
         }
         else {
